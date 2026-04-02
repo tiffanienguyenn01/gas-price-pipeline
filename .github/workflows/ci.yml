@@ -25,16 +25,8 @@ jobs:
 
       - name: Create GCP credentials file
         run: |
-          python3 -c "
-          import os, json
-          creds = os.environ.get('GCP_CREDENTIALS', '')
-          with open('/tmp/gcp_key.json', 'w') as f:
-              f.write(creds)
-          data = json.loads(creds)
-          print('Valid JSON! Project:', data.get('project_id'))
-          "
-        env:
-          GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+          echo "${{ secrets.GCP_CREDENTIALS }}" | base64 --decode > /tmp/gcp_key.json
+          python3 -c "import json; data=json.load(open('/tmp/gcp_key.json')); print('Valid JSON! Project:', data.get('project_id'))"
 
       - name: Run dbt compile
         working-directory: transform/gas_prices
