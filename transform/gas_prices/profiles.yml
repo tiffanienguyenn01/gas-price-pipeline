@@ -9,4 +9,4 @@ gas_prices:
       threads: 4
       timeout_seconds: 300
       location: US
-      keyfile: /tmp/gcp_key.json
+      keyfile: "{{ env_var('GOOGLE_APPLICATION_CREDENTIALS') }}"

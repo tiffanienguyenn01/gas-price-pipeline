@@ -19,6 +19,8 @@ with_changes AS (
 
 SELECT
     price_date,
+    FORMAT_DATE('%B', price_date) AS month_name,
+    EXTRACT(MONTH FROM price_date) AS month_num,
     product,
     price_usd_per_gallon,
     unit,
