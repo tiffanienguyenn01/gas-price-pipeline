@@ -1,0 +1,12 @@
+gas_prices:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: service-account
+      project: gas-price-pipeline
+      dataset: gas_price_dbt
+      threads: 4
+      timeout_seconds: 300
+      location: US
+      keyfile: /tmp/gcp_key.json
