@@ -1,0 +1,42 @@
+name: dbt CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  dbt-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install dbt-bigquery==1.7.0
+
+      - name: Create GCP credentials file
+        run: |
+          echo "${{ secrets.GCP_CREDENTIALS }}" > /tmp/gcp_key.json
+
+      - name: Run dbt compile
+        working-directory: transform/gas_prices
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp_key.json
+        run: |
+          dbt compile --profiles-dir .
+
+      - name: Run dbt test
+        working-directory: transform/gas_prices
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp_key.json
+        run: |
+          dbt test --profiles-dir .

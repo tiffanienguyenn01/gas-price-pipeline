@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: mart_gas_prices
+    description: "Final analytics table with gas prices and week-over-week changes"
+    columns:
+      - name: price_date
+        description: "Date of the weekly price reading"
+        tests:
+          - not_null
+      - name: product
+        description: "Gas product type"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["regular", "midgrade", "premium"]
+      - name: price_usd_per_gallon
+        description: "Retail price in USD per gallon"
+        tests:
+          - not_null
+      - name: price_tier
+        description: "Price tier label"
+        tests:
+          - accepted_values:
+              values: ["low", "medium", "high"]
+
+  - name: stg_gas_prices_combined
+    description: "Staging model combining all gas products"
+    columns:
+      - name: price_date
+        tests:
+          - not_null
+      - name: product
+        tests:
+          - not_null
