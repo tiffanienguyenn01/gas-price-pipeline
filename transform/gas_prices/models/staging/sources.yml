@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: raw
+    database: gas-price-pipeline
+    schema: gas_prices
+    tables:
+      - name: raw_eia_regular
+      - name: raw_eia_midgrade
+      - name: raw_eia_premium

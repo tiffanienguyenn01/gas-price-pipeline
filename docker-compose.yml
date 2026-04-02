@@ -1,0 +1,70 @@
+version: '3.8'
+
+x-airflow-common: &airflow-common
+  image: apache/airflow:2.8.1-python3.11
+  environment:
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__FERNET_KEY: 'ZmDfcTF7_60GrrY167zsiPd67pEvs0aGOv2oasOM1Pg='
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
+    EIA_API_KEY: ${EIA_API_KEY}
+    GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+    GCP_DATASET: ${GCP_DATASET}
+    GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/secrets/gcp_key.json
+    _PIP_ADDITIONAL_REQUIREMENTS: "requests==2.31.0 python-dotenv==1.0.0 pandas==2.2.3 pyarrow==18.1.0 loguru==0.7.2 tenacity==8.2.3 pydantic==2.10.6 google-cloud-bigquery==3.25.0 db-dtypes==1.2.0 dbt-bigquery==1.7.0"
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./logs:/opt/airflow/logs
+    - ./ingestion:/opt/airflow/ingestion
+    - ./data:/opt/airflow/data
+    - ./secrets:/opt/airflow/secrets
+    - ./transform:/opt/airflow/transform
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+
+  airflow-init:
+    <<: *airflow-common
+    command: >
+      bash -c "
+        pip install requests==2.31.0 python-dotenv==1.0.0 pandas==2.2.3 pyarrow==18.1.0 loguru==0.7.2 tenacity==8.2.3 pydantic==2.10.6 google-cloud-bigquery==3.25.0 db-dtypes==1.2.0 dbt-bigquery==1.7.0 &&
+        airflow db migrate &&
+        airflow users create
+          --username admin
+          --password admin
+          --firstname Admin
+          --lastname User
+          --role Admin
+          --email admin@example.com
+      "
+
+  scheduler:
+    <<: *airflow-common
+    command: airflow scheduler
+    restart: always
+
+  webserver:
+    <<: *airflow-common
+    command: airflow webserver
+    ports:
+      - "8080:8080"
+    restart: always
+
+volumes:
+  postgres_data:

@@ -1,0 +1,20 @@
+# Secrets - NEVER commit these
+.env
+secrets/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Data files
+data/raw/
+data/processed/
+*.parquet
+
+# Logs
+logs/
+
+# VS Code
+.vscode/
