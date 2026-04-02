@@ -25,18 +25,26 @@ jobs:
 
       - name: Create GCP credentials file
         run: |
-          echo "${{ secrets.GCP_CREDENTIALS }}" > /tmp/gcp_key.json
+          echo '${{ secrets.GCP_CREDENTIALS }}' > /tmp/gcp_key.json
+
+      - name: Debug - show files
+        working-directory: transform/gas_prices
+        run: |
+          echo "Files in transform/gas_prices:"
+          ls -la
+          echo "profiles.yml contents:"
+          cat profiles.yml
 
       - name: Run dbt compile
         working-directory: transform/gas_prices
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp_key.json
         run: |
-          dbt compile --profiles-dir .
+          dbt compile --profiles-dir /home/runner/work/gas-price-pipeline/gas-price-pipeline/transform/gas_prices
 
       - name: Run dbt test
         working-directory: transform/gas_prices
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp_key.json
         run: |
-          dbt test --profiles-dir .
+          dbt test --profiles-dir /home/runner/work/gas-price-pipeline/gas-price-pipeline/transform/gas_prices
