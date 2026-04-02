@@ -24,11 +24,17 @@ jobs:
           pip install dbt-bigquery==1.7.0 google-cloud-bigquery==3.11.4 google-cloud-bigquery-storage==2.22.0
 
       - name: Create GCP credentials file
+        run: |
+          python3 -c "
+          import os, json
+          creds = os.environ.get('GCP_CREDENTIALS', '')
+          with open('/tmp/gcp_key.json', 'w') as f:
+              f.write(creds)
+          data = json.loads(creds)
+          print('Valid JSON! Project:', data.get('project_id'))
+          "
         env:
           GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
-        run: |
-          echo "$GCP_CREDENTIALS" > /tmp/gcp_key.json
-          cat /tmp/gcp_key.json | python3 -c "import sys,json; json.load(sys.stdin); print('Valid JSON!')"
 
       - name: Run dbt compile
         working-directory: transform/gas_prices
